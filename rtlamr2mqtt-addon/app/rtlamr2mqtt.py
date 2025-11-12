@@ -355,10 +355,12 @@ def main():
                     rtltcp.poll()
                 if rtltcp.returncode is not None:
                     if LOG_LEVEL >= 3:
-                        logger.critical('RTL_TCP has died, trying to restart...')
-                    rtltcp = start_rtltcp(config)
-                    if rtltcp is not None:
-                        rtltcp.poll()
+                        logger.critical('RTL_TCP has died, restarting...')
+                    shutdown(rtlamr=rtlamr, rtltcp=rtltcp, mqtt_client=None)
+                    rtlamr = rtltcp = None
+                    read_counter = []
+                    sleep(1)
+                    continue
                 if rtltcp is None:
                     logger.critical('Failed to start RTL_TCP. Exiting...')
                     shutdown(
@@ -386,14 +388,12 @@ def main():
                 rtlamr.poll()
                 if rtlamr.returncode is not None:
                     if LOG_LEVEL >= 3:
-                        logger.critical('RTLAMR has died, trying to restart...')
-                    if int(config['general']['sleep_for']) > 0:
-                        if LOG_LEVEL >= 2:
-                            logger.info('Sleep for is set to %d seconds...', int(config['general']['sleep_for']))
-                        sleep(int(config['general']['sleep_for']))
-                    rtlamr = start_rtlamr(config)
-                    if rtlamr is not None:
-                        rtlamr.poll()
+                        logger.critical('RTLAMR has died, restarting...')
+                    shutdown(rtlamr=rtlamr, rtltcp=rtltcp, mqtt_client=None)
+                    rtlamr = rtltcp = None
+                    read_counter = []
+                    sleep(1)
+                    continue
 
             if rtlamr is None:
                 if LOG_LEVEL >= 3:
